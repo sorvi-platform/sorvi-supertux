@@ -584,6 +584,7 @@ Config::check_values()
 bool
 Config::is_christmas() const
 {
+  return false;
   if (christmas_mode)
     return true;
 

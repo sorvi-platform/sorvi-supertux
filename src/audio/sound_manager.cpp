@@ -64,7 +64,7 @@ SoundManager::SoundManager() :
       m_device = nullptr;
     }
     log_warning << "Couldn't initialize audio device: " << e.what() << std::endl;
-    print_openal_version();
+    // print_openal_version();
   }
 }
 

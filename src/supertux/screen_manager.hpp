@@ -107,5 +107,6 @@ private:
   std::vector<Action> m_actions;
 
   std::unique_ptr<ScreenFade> m_screen_fade;
+public:
   std::vector<std::unique_ptr<Screen> > m_screen_stack;
 };

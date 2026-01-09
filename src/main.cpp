@@ -14,6 +14,7 @@
 //  You should have received a copy of the GNU General Public License
 //  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+#define SDL_MAIN_NEEDED
 #include <SDL.h>
 
 #include <config.h>
@@ -23,17 +24,13 @@
 
 static std::unique_ptr<Main> g_main;
 
+extern const char SDL_SORVI_app_id[] = "org.sorvi.port.supertux";
+extern const char SDL_SORVI_app_name[] = "supertux";
+extern const char SDL_SORVI_app_version[] = "0.6.3";
+
 int main(int argc, char** argv)
 {
   g_main = std::make_unique<Main>();
-
   int ret = g_main->run(argc, argv);
-
-#if !defined(__EMSCRIPTEN__)
-  // Manually destroy, as atexit() functions are called before global
-  // destructors and thus would make the destruction crash.
-  g_main.reset();
-#endif
-
   return ret;
 }

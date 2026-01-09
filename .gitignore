@@ -96,3 +96,5 @@ ehthumbs.db
 Thumbs.db
 .directory
 *~
+
+.zig-cache/

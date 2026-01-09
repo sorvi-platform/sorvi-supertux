@@ -27,11 +27,6 @@
 #include <stdexcept>
 #include <version.h>
 
-#ifdef EMSCRIPTEN
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#endif
-
 #include "physfs/util.hpp"
 #include "supertux/gameconfig.hpp"
 #include "supertux/globals.hpp"
@@ -51,7 +46,7 @@ size_t my_curl_string_append(void* ptr, size_t size, size_t nmemb, void* userdat
   return size * nmemb;
 }
 
-#ifndef EMSCRIPTEN
+#if 0
 size_t my_curl_physfs_write(void* ptr, size_t size, size_t nmemb, void* userdata)
 {
   PHYSFS_file* f = static_cast<PHYSFS_file*>(userdata);
@@ -241,10 +236,6 @@ protected:
   TransferId m_id;
 
   const std::string m_url;
-#ifndef EMSCRIPTEN
-  CURL* m_handle;
-  std::array<char, CURL_ERROR_SIZE> m_error_buffer;
-#endif
 
   TransferStatusPtr m_status;
 
@@ -254,49 +245,12 @@ public:
     m_downloader(downloader),
     m_id(id),
     m_url(url),
-#ifndef EMSCRIPTEN
-    m_handle(),
-    m_error_buffer({{'\0'}}),
-#endif
     m_status(new TransferStatus(m_downloader, id, url))
   {
-#ifndef EMSCRIPTEN
-    m_handle = curl_easy_init();
-    if (!m_handle)
-    {
-      throw std::runtime_error("curl_easy_init() failed");
-    }
-    else
-    {
-      curl_easy_setopt(m_handle, CURLOPT_URL, url.c_str());
-      // cppcheck-suppress unknownMacro
-      curl_easy_setopt(m_handle, CURLOPT_USERAGENT, "SuperTux/" PACKAGE_VERSION " libcURL");
-      curl_easy_setopt(m_handle, CURLOPT_SSL_VERIFYPEER, 0);
-
-      curl_easy_setopt(m_handle, CURLOPT_WRITEDATA, this);
-      curl_easy_setopt(m_handle, CURLOPT_WRITEFUNCTION, &Transfer::on_data_wrap);
-
-      curl_easy_setopt(m_handle, CURLOPT_ERRORBUFFER, m_error_buffer.data());
-      curl_easy_setopt(m_handle, CURLOPT_NOSIGNAL, 1);
-      curl_easy_setopt(m_handle, CURLOPT_FAILONERROR, 1);
-      curl_easy_setopt(m_handle, CURLOPT_FOLLOWLOCATION, 1);
-
-      curl_easy_setopt(m_handle, CURLOPT_NOPROGRESS, 0);
-      curl_easy_setopt(m_handle, CURLOPT_PROGRESSDATA, this);
-  #if LIBCURL_VERSION_MAJOR > 7 || (LIBCURL_VERSION_MAJOR == 7 && LIBCURL_VERSION_MINOR >= 32)
-      curl_easy_setopt(m_handle, CURLOPT_XFERINFOFUNCTION, &Transfer::on_progress_wrap);
-  #else
-      curl_easy_setopt(m_handle, CURLOPT_PROGRESSFUNCTION, &Transfer::on_progress_wrap);
-  #endif
-    }
-#endif
   }
 
   virtual ~Transfer()
   {
-#ifndef EMSCRIPTEN
-    curl_easy_cleanup(m_handle);
-#endif
   }
 
   TransferStatusPtr get_status() const
@@ -304,24 +258,10 @@ public:
     return m_status;
   }
 
-#ifndef EMSCRIPTEN
-  const char* get_error_buffer() const
-  {
-    return m_error_buffer.data();
-  }
-#endif
-
   TransferId get_id() const
   {
     return m_id;
   }
-
-#ifndef EMSCRIPTEN
-  CURL* get_curl_handle() const
-  {
-    return m_handle;
-  }
-#endif
 
   const std::string& get_url() const
   {
@@ -343,62 +283,21 @@ public:
   }
 
 private:
-#ifndef EMSCRIPTEN
-  static size_t on_data_wrap(const char* ptr, size_t size, size_t nmemb, void* userdata)
-  {
-    return static_cast<Transfer*>(userdata)->on_data(ptr, size, nmemb);
-  }
-
-  static int on_progress_wrap(void* userdata,
-                              double dltotal, double dlnow,
-                              double ultotal, double ulnow)
-  {
-    return static_cast<Transfer*>(userdata)->on_progress(dltotal, dlnow, ultotal, ulnow);
-  }
-#endif
-
-private:
   Transfer(const Transfer&) = delete;
   Transfer& operator=(const Transfer&) = delete;
 };
 
 class FileTransfer final : public Transfer
 {
-private:
-#ifndef EMSCRIPTEN
-  std::unique_ptr<PHYSFS_file, int(*)(PHYSFS_File*)> m_fout;
-#endif
-
 public:
   FileTransfer(Downloader& downloader, TransferId id,
                const std::string& url, const std::string& outfile) :
     Transfer(downloader, id, url)
-#ifndef EMSCRIPTEN
-    ,
-    m_fout(PHYSFS_openWrite(outfile.c_str()), PHYSFS_close)
-#endif
   {
-#ifndef EMSCRIPTEN
-    if (!m_fout)
-    {
-      std::ostringstream out;
-      out << "PHYSFS_openRead() failed: " << physfsutil::get_last_error();
-      throw std::runtime_error(out.str());
-    }
-#else
-    // Sanitize input to prevent code injection from malicious callers.
-    // Escape backslashes and single quotes in the URL and file path to ensure safe usage.
-    auto url_clean = StringUtil::replace_all(StringUtil::replace_all(url, "\\", "\\\\"), "'", "\\'");
-    auto path_clean = StringUtil::replace_all(StringUtil::replace_all(FileSystem::join(std::string(PHYSFS_getWriteDir()), outfile), "\\", "\\\\"), "'", "\\'");
-    emscripten_run_script(("supertux_xhr_file_download(" + std::to_string(reinterpret_cast<intptr_t>(&m_downloader)) + ", " + std::to_string(m_id) + ", '" + url_clean + "', '" + path_clean + "');").c_str());
-#endif
   }
 
   size_t on_data(const char* ptr, size_t size, size_t nmemb) override
   {
-#ifndef EMSCRIPTEN
-    PHYSFS_writeBytes(m_fout.get(), ptr, size * nmemb);
-#endif
     return size * nmemb;
   }
 
@@ -418,12 +317,6 @@ public:
     Transfer(downloader, id, url),
     m_out(outstr)
   {
-#ifdef EMSCRIPTEN
-    // Sanitize input to prevent code injection from malicious callers.
-    // Escape backslashes and single quotes in the URL to ensure safe usage.
-    auto url_clean = StringUtil::replace_all(StringUtil::replace_all(url, "\\", "\\\\"), "'", "\\'");
-    emscripten_run_script(("supertux_xhr_string_download(" + std::to_string(reinterpret_cast<intptr_t>(&m_downloader)) + ", " + std::to_string(m_id) + ", '" + url_clean + "');").c_str());
-#endif
   }
 
   size_t on_data(const char* ptr, size_t size, size_t nmemb) override
@@ -438,37 +331,15 @@ private:
 };
 
 Downloader::Downloader() :
-#ifndef EMSCRIPTEN
-  m_multi_handle(),
-#endif
   m_transfers(),
   m_next_transfer_id(1),
   m_last_update_time(-1)
 {
-#ifndef EMSCRIPTEN
-  curl_global_init(CURL_GLOBAL_ALL);
-  m_multi_handle = curl_multi_init();
-  if (!m_multi_handle)
-  {
-    throw std::runtime_error("curl_multi_init() failed");
-  }
-#endif
 }
 
 Downloader::~Downloader()
 {
-#ifndef EMSCRIPTEN
-  for (auto& transfer : m_transfers)
-  {
-    curl_multi_remove_handle(m_multi_handle, transfer.second->get_curl_handle());
-  }
-#endif
   m_transfers.clear();
-
-#ifndef EMSCRIPTEN
-  curl_multi_cleanup(m_multi_handle);
-  curl_global_cleanup();
-#endif
 }
 
 void
@@ -481,36 +352,6 @@ Downloader::download(const std::string& url,
 
   log_info << "Downloading " << url << std::endl;
 
-#ifndef EMSCRIPTEN
-  char error_buffer[CURL_ERROR_SIZE+1];
-
-  CURL* curl_handle = curl_easy_init();
-  curl_easy_setopt(curl_handle, CURLOPT_URL, url.c_str());
-  curl_easy_setopt(curl_handle, CURLOPT_USERAGENT, "SuperTux/" PACKAGE_VERSION " libcURL");
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEFUNCTION, write_func);
-  curl_easy_setopt(curl_handle, CURLOPT_WRITEDATA, userdata);
-  curl_easy_setopt(curl_handle, CURLOPT_ERRORBUFFER, error_buffer);
-  curl_easy_setopt(curl_handle, CURLOPT_NOPROGRESS, 1);
-  curl_easy_setopt(curl_handle, CURLOPT_NOSIGNAL, 1);
-  curl_easy_setopt(curl_handle, CURLOPT_FAILONERROR, 1);
-  curl_easy_setopt(curl_handle, CURLOPT_FOLLOWLOCATION, 1);
-  curl_easy_setopt(curl_handle, CURLOPT_SSL_VERIFYPEER, 0);
-
-  CURLcode result = curl_easy_perform(curl_handle);
-  curl_easy_cleanup(curl_handle);
-
-  if (result != CURLE_OK)
-  {
-    std::string why = error_buffer[0] ? error_buffer : "unhandled error";
-    throw std::runtime_error(url + ": download failed: " + why);
-  }
-#else
-  log_warning << "Direct download not yet implemented for Emscripten." << std::endl;
-  // FUTURE MAINTAINERS: If this needs to be implemented, take a look at
-  // emscripten_wget(), emscripten_async_wget(), emscripten_wget_data() and
-  // emscripten_async_wget_data():
-  // https://emscripten.org/docs/api_reference/emscripten.h.html#c.emscripten_wget
-#endif
 }
 
 std::string
@@ -529,19 +370,6 @@ Downloader::download(const std::string& url, const std::string& filename)
 {
   if (g_config->disable_network)
     throw std::runtime_error("Networking is disabled");
-
-#ifndef EMSCRIPTEN
-  log_info << "download: " << url << " to " << filename << std::endl;
-  std::unique_ptr<PHYSFS_file, int(*)(PHYSFS_File*)> fout(PHYSFS_openWrite(filename.c_str()),
-                                                          PHYSFS_close);
-  download(url, my_curl_physfs_write, fout.get());
-#else
-  log_warning << "Direct download not yet implemented for Emscripten." << std::endl;
-  // FUTURE MAINTAINERS: If this needs to be implemented, take a look at
-  // emscripten_wget(), emscripten_async_wget(), emscripten_wget_data() and
-  // emscripten_async_wget_data():
-  // https://emscripten.org/docs/api_reference/emscripten.h.html#c.emscripten_wget
-#endif
 }
 
 void
@@ -556,9 +384,6 @@ Downloader::abort(TransferId id)
   {
     TransferStatusPtr status = (it->second)->get_status();
 
-#ifndef EMSCRIPTEN
-    curl_multi_remove_handle(m_multi_handle, it->second->get_curl_handle());
-#endif
     m_transfers.erase(it);
 
     for (const auto& callback : status->callbacks)
@@ -604,95 +429,11 @@ Downloader::update()
     m_transfers.clear();
     return;
   }
-
-#ifndef EMSCRIPTEN
-  // Prevent updating a Downloader multiple times in the same frame.
-  if (m_last_update_time == g_real_time) return;
-  m_last_update_time = g_real_time;
-
-  // Read data from the network.
-  CURLMcode ret;
-  int running_handles;
-  while ((ret = curl_multi_perform(m_multi_handle, &running_handles)) == CURLM_CALL_MULTI_PERFORM)
-  {
-    log_debug << "updating" << std::endl;
-  }
-
-  // Check if any downloads got finished.
-  int msgs_in_queue;
-  CURLMsg* msg;
-  while ((msg = curl_multi_info_read(m_multi_handle, &msgs_in_queue)))
-  {
-    switch (msg->msg)
-    {
-      case CURLMSG_DONE:
-        {
-          CURLcode resultfromcurl = msg->data.result;
-          log_info << "Download completed with " << resultfromcurl << std::endl;
-          curl_multi_remove_handle(m_multi_handle, msg->easy_handle);
-
-          auto it = std::find_if(m_transfers.begin(), m_transfers.end(),
-                                 [&msg](const auto& rhs) {
-                                   return rhs.second->get_curl_handle() == msg->easy_handle;
-                                 });
-          assert(it != m_transfers.end());
-          TransferStatusPtr status = it->second->get_status();
-          status->error_msg = it->second->get_error_buffer();
-          m_transfers.erase(it);
-
-          if (resultfromcurl == CURLE_OK)
-          {
-            bool success = true;
-            for (const auto& callback : status->callbacks)
-            {
-              try
-              {
-                callback(success);
-              }
-              catch(const std::exception& err)
-              {
-                success = false;
-                log_warning << "Exception in Downloader: " << err.what() << std::endl;
-                status->error_msg = err.what();
-              }
-            }
-            if (status->parent_list)
-              status->parent_list->on_transfer_complete(status, success);
-          }
-          else
-          {
-            log_warning << "Error: " << curl_easy_strerror(resultfromcurl) << std::endl;
-            for (const auto& callback : status->callbacks)
-            {
-              try
-              {
-                callback(false);
-              }
-              catch(const std::exception& err)
-              {
-                log_warning << "Illegal exception in Downloader: " << err.what() << std::endl;
-              }
-            }
-            if (status->parent_list)
-              status->parent_list->on_transfer_complete(status, false);
-          }
-        }
-        break;
-
-      default:
-        log_warning << "Unhandled cURL message: " << msg->msg << std::endl;
-        break;
-    }
-  }
-#endif
 }
 
 TransferStatusPtr
 Downloader::add_transfer(std::unique_ptr<Transfer> transfer)
 {
-#ifndef EMSCRIPTEN
-  curl_multi_add_handle(m_multi_handle, transfer->get_curl_handle());
-#endif
   auto transferId = transfer->get_id();
   m_transfers[transferId] = std::move(transfer);
   return m_transfers[transferId]->get_status();
@@ -711,111 +452,3 @@ Downloader::request_string_download(const std::string& url, std::string& out_str
   log_info << "Requesting download for: " << url << std::endl;
   return add_transfer(std::make_unique<StringTransfer>(*this, m_next_transfer_id++, url, out_string));
 }
-
-#ifdef EMSCRIPTEN
-void
-Downloader::onDownloadProgress(int id, int loaded, int total)
-{
-  auto it = m_transfers.find(id);
-  if (it == m_transfers.end())
-  {
-    log_warning << "Transfer not found: " << id << std::endl;
-  }
-  else
-  {
-    (it->second)->on_progress(static_cast<double>(loaded), static_cast<double>(total), 0.0, 0.0);
-  }
-}
-
-void
-Downloader::onDownloadFinished(int id, const char* data)
-{
-  auto it = m_transfers.find(id);
-  if (it == m_transfers.end())
-  {
-    log_warning << "Transfer not found: " << id << std::endl;
-  }
-  else
-  {
-    // If a string with the downloaded data is provided,
-    // that would mean a StringTransfer was taking place.
-    // Pass the data to that transfer.
-    const size_t data_len = strlen(data);
-    if (data_len != 0)
-    {
-      auto* str_transfer = dynamic_cast<StringTransfer*>(it->second.get());
-      if (str_transfer)
-        str_transfer->on_data(data, data_len, 1);
-    }
-
-    TransferStatusPtr status = it->second->get_status();
-    for (const auto& callback : status->callbacks)
-    {
-      try
-      {
-        callback(true);
-      }
-      catch(const std::exception& err)
-      {
-        log_warning << "Exception in Downloader: " << err.what() << std::endl;
-      }
-    }
-    if (status->parent_list)
-      status->parent_list->on_transfer_complete(status, true);
-  }
-}
-
-void
-Downloader::onDownloadError(int id)
-{
-  auto it = m_transfers.find(id);
-  if (it == m_transfers.end())
-  {
-    log_warning << "Transfer not found: " << id << std::endl;
-  }
-  else
-  {
-    TransferStatusPtr status = it->second->get_status();
-    for (const auto& callback : status->callbacks)
-    {
-      try
-      {
-        callback(false);
-      }
-      catch(const std::exception& err)
-      {
-        log_warning << "Exception in Downloader: " << err.what() << std::endl;
-      }
-    }
-    if (status->parent_list)
-      status->parent_list->on_transfer_complete(status, false);
-  }
-}
-
-void
-Downloader::onDownloadAborted(int id)
-{
-  auto it = m_transfers.find(id);
-  if (it == m_transfers.end())
-  {
-    log_warning << "Transfer not found: " << id << std::endl;
-  }
-  else
-  {
-    TransferStatusPtr status = it->second->get_status();
-    for (const auto& callback : status->callbacks)
-    {
-      try
-      {
-        callback(false);
-      }
-      catch(const std::exception& err)
-      {
-        log_warning << "Exception in Downloader: " << err.what() << std::endl;
-      }
-    }
-    if (status->parent_list)
-      status->parent_list->on_transfer_complete(status, false);
-  }
-}
-#endif

@@ -681,24 +681,18 @@ void ScreenManager::loop_iter()
 #endif
 }
 
-#ifdef __EMSCRIPTEN__
-static void g_loop_iter() {
-  auto screen_manager = ScreenManager::current();
-  screen_manager->loop_iter();
+extern "C" {
+  int SDL2_iterate(void) {
+    auto screen_manager = ScreenManager::current();
+    if (screen_manager->m_screen_stack.empty()) return 1;
+    screen_manager->loop_iter();
+    return 0;
+  }
 }
-#endif
 
 void
 ScreenManager::run()
 {
   Integration::init_all();
-
   handle_screen_switch();
-#ifdef __EMSCRIPTEN__
-  emscripten_set_main_loop(g_loop_iter, -1, 1);
-#else
-  while (!m_screen_stack.empty()) {
-    loop_iter();
-  }
-#endif
 }

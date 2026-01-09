@@ -198,16 +198,6 @@ PhysfsSubsystem::PhysfsSubsystem(const char* argv0,
 
 void PhysfsSubsystem::find_mount_datadir()
 {
-#ifndef __EMSCRIPTEN__
-#ifdef __ANDROID__
-    if (!setup_android_datadir())
-    {
-      log_warning << "Couldn't setup android assets: " << PHYSFS_getErrorByCode(PHYSFS_getLastErrorCode()) << std::endl;
-    }
-
-    return;
-#endif
-
   if (m_forced_datadir)
   {
     m_datadir = *m_forced_datadir;
@@ -222,27 +212,12 @@ void PhysfsSubsystem::find_mount_datadir()
   }
   else
   {
-    // check if we run from source dir
-    char* basepath_c = SDL_GetBasePath();
-    std::string basepath = basepath_c ? basepath_c : "./";
-    SDL_free(basepath_c);
+    m_datadir = BUILD_DATA_DIR;
 
-    if (FileSystem::exists(FileSystem::join(BUILD_DATA_DIR, "credits.stxt")))
+    // Add config dir for supplemental files
+    if (FileSystem::is_directory(BUILD_CONFIG_DATA_DIR))
     {
-      m_datadir = BUILD_DATA_DIR;
-
-      // Add config dir for supplemental files
-      if (FileSystem::is_directory(BUILD_CONFIG_DATA_DIR))
-      {
-        PHYSFS_mount(std::filesystem::canonical(BUILD_CONFIG_DATA_DIR).string().c_str(), nullptr, 1);
-      }
-    }
-    else
-    {
-      // if the game is not run from the source directory, try to find
-      // the global install location
-      m_datadir = basepath.substr(0, basepath.rfind(INSTALL_SUBDIR_BIN));
-      m_datadir = FileSystem::join(m_datadir, INSTALL_SUBDIR_SHARE);
+      PHYSFS_mount(std::filesystem::canonical(BUILD_CONFIG_DATA_DIR).string().c_str(), nullptr, 1);
     }
   }
 
@@ -250,12 +225,6 @@ void PhysfsSubsystem::find_mount_datadir()
   {
     log_warning << "Couldn't add '" << m_datadir << "' to PhysFS searchpath: " << physfsutil::get_last_error() << std::endl;
   }
-#else
-  if (!PHYSFS_mount(BUILD_CONFIG_DATA_DIR, nullptr, 1))
-  {
-    log_warning << "Couldn't add '" << BUILD_CONFIG_DATA_DIR << "' to PhysFS searchpath: " << physfsutil::get_last_error() << std::endl;
-  }
-#endif
 }
 
 /** Re-mounts all essential directories, relative to the data directory, which may have been
@@ -467,31 +436,13 @@ PhysfsSubsystem::~PhysfsSubsystem()
 SDLSubsystem::SDLSubsystem()
 {
   Uint32 flags = SDL_INIT_TIMER | SDL_INIT_VIDEO | SDL_INIT_JOYSTICK | SDL_INIT_GAMECONTROLLER;
-
-#if SDL_VERSION_ATLEAST(2,0,22) && (defined(__linux) || defined(__linux__) || defined(linux) || defined(__FreeBSD) || \
-    defined(__OPENBSD) || defined(__NetBSD)) && !defined(STEAM_BUILD) && !defined(ANDROID)
-  /* See commit 254fcc9 for SDL. Most of the Nvidia problems are knocked out (i
-   * think) for now thanks to nvidia's open drivers. Wayland is needed for
-   * precision scrolling to work (which is used for the editor) and most distros
-   * are shipping wayland out of the box, so let's prefer it.
-   *
-   * When we migrate to SDL3, we can remove this snippet as they've now
-   * defaulted to preferring Wayland (if i recall) -- Swagtoy
-   */
-  if (g_config->prefer_wayland)
-    SDL_SetHint(SDL_HINT_VIDEODRIVER, "wayland,x11");
-
-#endif
+  SDL_SetHint(SDL_HINT_LOGGING, "*=verbose");
   if (SDL_Init(flags) < 0)
   {
     std::stringstream msg;
     msg << "Couldn't initialize SDL: " << SDL_GetError();
     throw std::runtime_error(msg.str());
   }
-
-#ifdef __ANDROID__
-  g_config->mobile_controls = SDL_GetNumTouchDevices() > 0;
-#endif
 
   if (TTF_Init() < 0)
   {
@@ -773,11 +724,7 @@ Main::run(int argc, char** argv)
       return EXIT_FAILURE;
     }
 
-#ifdef __ANDROID__
-    m_physfs_subsystem.reset(new PhysfsSubsystem(nullptr, args.datadir, SDL_AndroidGetExternalStoragePath()));
-#else
     m_physfs_subsystem.reset(new PhysfsSubsystem(nullptr, args.datadir, args.userdir));
-#endif
     m_physfs_subsystem->print_search_path();
 
     s_timelog.log("config");

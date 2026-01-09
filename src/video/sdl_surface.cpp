@@ -20,7 +20,7 @@
 #include <stdexcept>
 
 #include <SDL_image.h>
-#include <savepng.h>
+// #include <savepng.h>
 
 #include "physfs/physfs_sdl.hpp"
 #include "util/log.hpp"
@@ -93,6 +93,8 @@ SDLSurface::from_file(const std::string& filename)
 int
 SDLSurface::save_png(const SDL_Surface& surface, const std::string& filename)
 {
+  return false;
+#if 0
   // This does not lead to a double free when 'tmp == screen', as
   // SDL_PNGFormatAlpha() will increase the refcount of surface.
   SDLSurfacePtr tmp(SDL_PNGFormatAlpha(const_cast<SDL_Surface*>(&surface)));
@@ -114,4 +116,5 @@ SDLSurface::save_png(const SDL_Surface& surface, const std::string& filename)
   {
     return true;
   }
+#endif
 }

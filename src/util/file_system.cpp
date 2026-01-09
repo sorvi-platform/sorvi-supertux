@@ -34,12 +34,6 @@
 #else
   #include <cstdlib>
 #endif
-#ifdef __EMSCRIPTEN__
-#include <emscripten.h>
-#include <emscripten/html5.h>
-#else
-#include <curl/curl.h>
-#endif
 
 #include <SDL2/SDL_version.h>
 #if SDL_VERSION_ATLEAST(2,0,14)
@@ -294,18 +288,6 @@ open_editor(const std::string& filename)
 
 std::string escape_url(const std::string& url)
 {
-#ifndef __EMSCRIPTEN__
-  std::string result = url;
-  char *output = curl_easy_escape(nullptr, url.c_str(), static_cast<int>(url.length()));
-  if(output) {
-    result = std::string(output);
-    curl_free(output);
-  }
-
-  return result;
-#else
-  return emscripten_run_script_string(("encodeURIComponent(" + url + ")").c_str());
-#endif
 }
 
 void open_url(const std::string& url)
