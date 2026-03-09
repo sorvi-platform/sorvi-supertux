@@ -166,10 +166,7 @@ pub fn build(b: *std.Build) void {
             .link_libcpp = true,
             .sanitize_c = .off,
         }),
-        .assets = .{
-            .files = assets,
-            .integration = .bundle,
-        },
+        .assets = assets,
     });
     supertux.root_module.addCSourceFiles(.{
         .flags = &.{
