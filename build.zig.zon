@@ -19,19 +19,19 @@
             .hash = "zlib-1.3.1-ZZQ7lc8NAABUbHzDe_cSWboCqMbrLkVwvFkKnojgeiT2",
         },
         .sorvi_SDL3 = .{
-            .url = "git+https://github.com/sorvi-platform/sorvi-SDL3.git#95e03d6566ba6ee0c1cac68869e9369409f0df16",
-            .hash = "SDL3-3.4.0-NJYZ8NzqAACvjq80Ahq3i0eYK2sN9eLL1exiwzjLTJcq",
+            .url = "git+https://github.com/sorvi-platform/sorvi-SDL3.git#914be366a27f10928d8b1697f0f47e9ae1128a98",
+            .hash = "SDL3-3.4.0-NJYZ8HPqAABJYMNpsAgwMvoHzevfPL_5GvIEJ873SErq",
         },
         .SDL2 = .{
             .url = "git+https://github.com/sorvi-platform/SDL2-compat.git#91399ec62ffb0183d364c8595b74c30171838337",
             .hash = "SDL2-2.32.10-t188q0dIBgBph6uAlUkDgnYu15CVNXEsVykHbQk2C4BM",
         },
         .openal = .{
-            .url = "git+https://github.com/sorvi-platform/openal-soft.git#81899314401780cf612ee5072a7def8ce52a0fae",
+            .url = "git+https://github.com/sorvi-platform/openal-soft.git#be36b25f8c564f196638ecc753b7df9cc389805d",
             .hash = "openal-1.25.0-au8osE8gAACEaWxbkdxvv0a_zd4OmgtAUd1Ekkn1e1RX",
         },
         .sorvi_physfs = .{
-            .url = "git+https://github.com/sorvi-platform/sorvi-physfs.git#742af99039c5b4c0126fdf7dd71298298391419c",
+            .url = "git+https://github.com/sorvi-platform/sorvi-physfs.git#f4dfce7c7e767d374196cc39ea72b1bec4c529d1",
             .hash = "sorvi_physfs-3.2.0-bg9QqSUKAADirEJfLeK8rRGod8A5hGRq6xaitPxVDuE8",
         },
         .libvorbis = .{
