@@ -15,10 +15,10 @@
 
       frontend_runtime_deps = with env.pkgs; [
         vulkan-loader
-        xorg.libX11
-        xorg.libXcursor
-        xorg.libXi
-        xorg.libXrandr
+        libx11
+        libxcursor
+        libxi
+        libxrandr
         libxkbcommon
         wayland
         alsa-lib
