@@ -29,8 +29,8 @@
 #include "util/log.hpp"
 
 SoundManager::SoundManager() :
-  m_device(alcOpenDevice(nullptr)),
-  m_context(alcCreateContext(m_device, nullptr)),
+  m_device(nullptr), // alcOpenDevice(nullptr)),
+  m_context(nullptr), // alcCreateContext(m_device, nullptr)),
   m_sound_enabled(false),
   m_sound_volume(0),
   m_buffers(),
