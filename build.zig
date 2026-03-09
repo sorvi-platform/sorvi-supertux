@@ -9,14 +9,14 @@ pub fn build(b: *std.Build) void {
     // set this to true whenever these deps update
     // and then back to false once symlinks are updated
     if (false) {
-      const zon = @import("build.zig.zon");
-      inline for (.{"sorvi_SDL3", "sorvi_physfs"}) |name| {
-        const dep = @field(zon.dependencies, name);
-        const path = b.graph.global_cache_root.join(b.allocator, &.{"p", dep.hash}) catch @panic("OOM");
-        const dir = std.fs.cwd().openDir(path, .{}) catch unreachable;
-        dir.symLink(b.pathFromRoot("../sorvi"), "sorvi", .{.is_directory = true}) catch {};
-      }
-      return;
+        const zon = @import("build.zig.zon");
+        inline for (.{ "sorvi_SDL3", "sorvi_physfs" }) |name| {
+            const dep = @field(zon.dependencies, name);
+            const path = b.graph.global_cache_root.join(b.allocator, &.{ "p", dep.hash }) catch @panic("OOM");
+            const dir = std.fs.cwd().openDir(path, .{}) catch unreachable;
+            dir.symLink(b.pathFromRoot("../sorvi"), "sorvi", .{ .is_directory = true }) catch {};
+        }
+        return;
     }
 
     const sorvi_dep = b.dependency("sorvi", .{
