@@ -23,8 +23,8 @@
             .hash = "SDL3-3.4.0-NJYZ8MjxAADyj48G8FqMx6AI9_TVklK9zhZYjUbdqfwJ",
         },
         .SDL2 = .{
-            .url = "git+https://github.com/sorvi-platform/SDL2-compat.git#91399ec62ffb0183d364c8595b74c30171838337",
-            .hash = "SDL2-2.32.10-t188q0dIBgBph6uAlUkDgnYu15CVNXEsVykHbQk2C4BM",
+            .url = "git+https://github.com/sorvi-platform/SDL2-compat.git#8f3d87f24ff5bc5e2198ccb28ff971c9b049a991",
+            .hash = "SDL2-2.32.10-t188qzymBgA8N9_cjcVxkfkm1-GgUif5r0Fdozawmw7a",
         },
         .openal = .{
             .url = "git+https://github.com/sorvi-platform/openal-soft.git#e7a8c1a939ac1ca6e48e7405eaf76123ddea48af",
