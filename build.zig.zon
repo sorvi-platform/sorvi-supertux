@@ -15,28 +15,28 @@
             .hash = "N-V-__8AAOVgLgAh8Rag__ecbHhLAuR3jqjupfL7cbvJQvfn",
         },
         .zlib = .{
-            .url = "git+https://github.com/allyourcodebase/zlib.git#3599c16d41dbe749ae51b0ff7ab864c61adc779a",
-            .hash = "zlib-1.3.1-ZZQ7lc8NAABUbHzDe_cSWboCqMbrLkVwvFkKnojgeiT2",
+            .url = "git+https://github.com/allyourcodebase/zlib.git#d3b5519d3b73616a6bfece0712f080029d2a9244",
+            .hash = "zlib-1.3.2-ZZQ7lc8NAAAHm9MDfplvwoesXvk4tVm6VCsiI8KnIbT0",
         },
         .sorvi_SDL3 = .{
-            .url = "git+https://github.com/sorvi-platform/sorvi-SDL3.git#aac9e13d46d6f4b8f6c5c60cb54677349d140fe0",
-            .hash = "SDL3-3.4.0-NJYZ8MjxAADyj48G8FqMx6AI9_TVklK9zhZYjUbdqfwJ",
+            .url = "git+https://github.com/sorvi-platform/sorvi-SDL3.git#03abab5dd63fb3d0ae2275a4487b73a095eda28b",
+            .hash = "SDL3-3.4.0-NJYZ8MjxAACcYNz-ku62OGliCGvfA5qTuLUeWQZKEV1Y",
         },
         .SDL2 = .{
-            .url = "git+https://github.com/sorvi-platform/SDL2-compat.git#8f3d87f24ff5bc5e2198ccb28ff971c9b049a991",
-            .hash = "SDL2-2.32.10-t188qzymBgA8N9_cjcVxkfkm1-GgUif5r0Fdozawmw7a",
+            .url = "git+https://github.com/sorvi-platform/SDL2-compat.git#89bede5d81b3005315ca59f6cd1afb11e6ffa498",
+            .hash = "SDL2-2.32.10-t188qz2mBgBg67sxM3YsycZKwtu50-zQ_bOUt_d7VSKs",
         },
         .openal = .{
-            .url = "git+https://github.com/sorvi-platform/openal-soft.git#e7a8c1a939ac1ca6e48e7405eaf76123ddea48af",
-            .hash = "openal-1.25.0-au8osFAgAAAphHdWjiMcPT_U3uKSwc0o2d_r30Ibk8_z",
+            .url = "git+https://github.com/sorvi-platform/openal-soft.git#d49a5721b50b837e4069b76e7cdbabe378c10174",
+            .hash = "openal-1.25.0-au8osJggAAAlU6WQAO7AIJqWsIkXHXVamdFz2jvRoudw",
         },
         .sorvi_physfs = .{
             .url = "git+https://github.com/sorvi-platform/sorvi-physfs.git#6d59e167cb3406ee0e238e4c19ed2ea8553d69e4",
             .hash = "sorvi_physfs-3.2.0-bg9QqXoJAAC-Atmx_R5FzOw7JKuMAIAxes20X8mZvgAt",
         },
         .libvorbis = .{
-            .url = "git+https://github.com/sorvi-platform/libvorbis.git#b57e8e88de8d1c83134db1ddbd1f19a448f52a91",
-            .hash = "libvorbis-1.3.8-4-AAAAACYdJgC0TEGwRiJrw3YAVLRORhM6-WmfkTLnjq5G",
+            .url = "git+https://github.com/sorvi-platform/libvorbis.git#ad5eb8860c2bce8ccfc2f76cec489af44a275514",
+            .hash = "libvorbis-1.3.8-4-h_AypU0dJgDWZWcJybC_3ldSZiK2v4OFa0HXpdSc3QHO",
         },
         .supertux = .{
             .url = "git+https://github.com/SuperTux/supertux.git#4b5663fc0c3ba08a8f8bd2ec8b75b5c02f82f7c7",

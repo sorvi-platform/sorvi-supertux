@@ -12,9 +12,9 @@ pub fn build(b: *std.Build) void {
         const zon = @import("build.zig.zon");
         inline for (.{ "sorvi_SDL3", "sorvi_physfs" }) |name| {
             const dep = @field(zon.dependencies, name);
-            const path = b.graph.global_cache_root.join(b.allocator, &.{ "p", dep.hash }) catch @panic("OOM");
-            const dir = std.fs.cwd().openDir(path, .{}) catch unreachable;
-            dir.symLink(b.pathFromRoot("../sorvi"), "sorvi", .{ .is_directory = true }) catch {};
+            const path = b.build_root.join(b.allocator, &.{ "zig-pkg", dep.hash }) catch @panic("OOM");
+            const dir = std.Io.Dir.cwd().openDir(b.graph.io, path, .{}) catch unreachable;
+            dir.symLink(b.graph.io, b.pathFromRoot("../sorvi"), "sorvi", .{ .is_directory = true }) catch {};
         }
         return;
     }
