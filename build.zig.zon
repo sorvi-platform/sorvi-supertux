@@ -19,8 +19,8 @@
             .hash = "zlib-1.3.2-ZZQ7lc8NAAAHm9MDfplvwoesXvk4tVm6VCsiI8KnIbT0",
         },
         .sorvi_SDL3 = .{
-            .url = "git+https://github.com/sorvi-platform/sorvi-SDL3.git#03abab5dd63fb3d0ae2275a4487b73a095eda28b",
-            .hash = "SDL3-3.4.0-NJYZ8MjxAACcYNz-ku62OGliCGvfA5qTuLUeWQZKEV1Y",
+            .url = "git+https://github.com/sorvi-platform/sorvi-SDL3.git#a567488bb3b6acf13acff64d85e7d07b40f4c953",
+            .hash = "SDL3-3.4.0-NJYZ8ALyAACjQN0BNHyAXarVSJPz2t17xHjSP8drt1Cs",
         },
         .SDL2 = .{
             .url = "git+https://github.com/sorvi-platform/SDL2-compat.git#89bede5d81b3005315ca59f6cd1afb11e6ffa498",
