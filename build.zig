@@ -1,23 +1,6 @@
-const std = @import("std");
-const sorvi = @import("sorvi");
-
-pub fn build(b: *std.Build) void {
+pub fn build(b: *std.Build) !void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
-
-    // fixup hack until sorvi repo becomes public
-    // set this to true whenever these deps update
-    // and then back to false once symlinks are updated
-    if (false) {
-        const zon = @import("build.zig.zon");
-        inline for (.{ "sorvi_SDL3", "sorvi_physfs" }) |name| {
-            const dep = @field(zon.dependencies, name);
-            const path = b.build_root.join(b.allocator, &.{ "zig-pkg", dep.hash }) catch @panic("OOM");
-            const dir = std.Io.Dir.cwd().openDir(b.graph.io, path, .{}) catch unreachable;
-            dir.symLink(b.graph.io, b.pathFromRoot("../sorvi"), "sorvi", .{ .is_directory = true }) catch {};
-        }
-        return;
-    }
 
     const sorvi_dep = b.dependency("sorvi", .{
         .target = target,
@@ -168,7 +151,7 @@ pub fn build(b: *std.Build) void {
     var assets = b.addWriteFiles();
     _ = assets.addCopyDirectory(supertux_dep.path("data"), "", .{});
 
-    const supertux = sorvi.addSorviCore(b, .{
+    const supertux = try sorvi.addSorviCore(b, .{
         .name = "supertux",
         .root_module = b.createModule(.{
             .target = target,
@@ -722,8 +705,11 @@ pub fn build(b: *std.Build) void {
     supertux.root_module.linkLibrary(libsexp);
     for (libsexp.installed_headers.items) |dir| supertux.root_module.addSystemIncludePath(dir.getSource());
     supertux.root_module.linkLibrary(png_dep.artifact("png"));
-    supertux.fixup(b);
+    try supertux.fixup(b);
 
     const step = b.step("run", "Run supertux in a reference frontend");
     step.dependOn(&sorvi.addRunSorviCore(b, frontend, supertux).step);
 }
+
+const std = @import("std");
+const sorvi = @import("sorvi");
