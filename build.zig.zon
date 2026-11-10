@@ -4,8 +4,8 @@
     .fingerprint = 0x68ee86d18b3af9f3,
     .dependencies = .{
         .sorvi = .{
-            .url = "git+https://gist.github.com/4296b2d56b85ad056b2184b06d9e5635.git#caf71f7507f9e2d4da805d8c77621fb1ab51fad5",
-            .hash = "sorvi-0.0.0-SORVIM0BAAB9Bj64v1d-ps8EAqKnWH6qIwWA-skIXZYN",
+            .url = "git+https://gist.github.com/4296b2d56b85ad056b2184b06d9e5635.git#bd52c51e81569c950745352c24da23234e2d35cc",
+            .hash = "sorvi-0.0.0-SORVIMEBAACgsQ1t_OJxNGyz5q98zOKWAJMmSGThn37J",
         },
         .glm = .{
             .url = "git+https://github.com/g-truc/glm.git#b1fed407864225653dae04674f04014c92287a26",
